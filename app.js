@@ -35,13 +35,18 @@ class Automate {
         await this.page.setViewport({ width: 0, height: 0 });
 
         await this.page.goto(this.hostname);
+        await this.page.waitForSelector("#username")
+        await this.page.waitForSelector("#password")
         await this.page.type("#username", "admin@bt.salesforce.com")
         await this.page.type("#password", "123456")
+        // await sleep(30000)
+
+        await this.page.waitForSelector("#Login")
         await this.page.click("#Login")
+
         // await this.page.waitForNavigation()
-        await this.page.waitForNetworkIdle({ timeout: 30000 })
+        await this.page.waitForNetworkIdle({ timeout: 60000 }) // 60 sec
         console.log("=> Login Complete");
-        // await sleep(3000)
     }
 
     async signup(config) {
@@ -125,7 +130,7 @@ class Automate {
         //     pageUrl, orgUrlObj, licenseEditorUrl
         // });
         await licenseEditorPage.bringToFront()
-        await licenseEditorPage.setViewport({height: 0, width: 0})
+        await licenseEditorPage.setViewport({ height: 0, width: 0 })
         await licenseEditorPage.goto(licenseEditorUrl)
         await licenseEditorPage.waitForSelector("form[name='licenseEditor:theForm']")
         let apexpDivs = await licenseEditorPage.$$("form[name='licenseEditor:theForm'] div.apexp")
@@ -141,7 +146,7 @@ class Automate {
             let sdiv = apexpDivs[licenseDivIndex]
 
             let editionRows = await sdiv.$$("table.list.container tbody tr")
-            console.log({ EditionLicense: editionRows.length });
+            console.log({ LicenseType: key, Number: editionRows.length });
             for (let i of editionRows) {
                 let tds = await i.$$("td")
                 // console.log({ tds });
@@ -432,6 +437,55 @@ class Automate {
             }
         }
 
+        let licenseConfig2 = {
+            EditionLicense: {
+                "Developer Edition": "100"
+            },
+            AddonLicense: {
+                "FinancialServicesCloudBasicAddOn": "10",
+                "FinancialServicesCloudStandardAddOn": "10",
+                "FinancialServicesForCmtyAddon": "10",
+                "APIRequestLimit1000": "1",
+                "Apps250IgnoreQuantityAddOn": "1",
+                "ChatterAnswersUser": "10",
+                "ChatterAnswersUser": "10",
+                "CRMUserAddOn": "10",
+                "CustomerCommunity": "10",
+                "CustomerCommunityLogin": "10",
+                "CustomerCommunityPlus": "10",
+                "CustomerCommunityPlusLogin": "10",
+                "EinsteinAgentBasic": "1",
+                "EinsteinAgentCWUBasic": "1",
+                "EinsteinArticleRecommendations": "1",
+                "EinsteinBuilderFree": "1",
+                "EntitlementsAddOn": "1",
+                "FileStorage1GB": "5",
+                "FileStorageIgnoreQuantity10GB": "1",
+                "FlowExecutionsUI50AddOn": "1",
+                "FlowSites": "1",
+                "InteractionUser": "5",
+                "MarketingUser": "5",
+                "MySearchAddOn": "1",
+                "OfflineUser": "5",
+                "PartnerCommunity": "10",
+                "PartnerCommunityLogin": "10",
+                "SalesConsoleUser": "10",
+                "SalesforceContentUser": "10",
+                "ServiceDeskUser": "10",
+                "Sites24": "1",
+                "SurveyUsage300ResponseLimit": "1",
+                "Tabs1200IgnoreQuantityAddOn": "1"
+            },
+            PlatformLicense: {},
+            UserLicense: {
+                "Media Cloud Base (Permset License)": "100",
+                "Media Cloud Plus (Permset License)": "100",
+                "Enterprise Product Catalog (Permset License)": "100",
+                "Ad Sales Management (Permset License)": "100",
+                "Comms Cloud (Permset License)": "100"
+            }
+        }
+
         let userPrefConfig = {
             "Apex Diagnostics": true,
             "Manage Packaging": true,
@@ -473,16 +527,48 @@ class Automate {
             }
         }
 
+
         const hoseMyOrgConfig = {
             "CustomObjectLicensing": true,
             // "Forecasting3": true,
             // "Forecasting3Enable": true
         }
 
+        const hoseMyOrgConfig240 = {
+            "CustomObjectLicensing": true,
+            "InteractionPlatformPilot": true,
+            "OmniStudio": true
+            // "Forecasting3": true,
+            // "Forecasting3Enable": true
+        }
+
+        let provisionValConfig240 = {
+            "Maximum size of Apex Code (character length, excluding comments)": {
+                type: "text",
+                val: "50000000"
+            },
+            "Apex CPU limit": {
+                type: "text",
+                val: "200000"
+            },
+            "Maximum number of custom labels per namespace": {
+                type: "text",
+                val: "100000"
+            },
+            "Platform Cache available to the Org (MB). Changes associated with purchase.": {
+                type: "text",
+                val: "20"
+            },
+            "Platform Events: Maximum number of platform events": {
+                type: "text",
+                val: "25"
+            }
+        }
+
         await automate.loginBlacktab()
-        await automate.signup(signupConfig)
-        // await automate.addLicense("00Dxx0000006Mt9", licenseConfig)
         // await automate.setAdminUserPrefs(userPrefConfig)
+
+        // await automate.addLicense("00Dxx0000006Mt9", licenseConfig)
         // await automate.setOrganizationAmounts("00Dxx0000006Mt9", provisionValConfig)
         // await automate.doHoseMyOrg("00Dxx0000006Mt9", hoseMyOrgConfig)
         // await page.goto(hostname);
@@ -491,18 +577,27 @@ class Automate {
 
         // await automate.setAdminUserPrefs(userPrefConfig)
 
-
-        const orgId = "00Dxx0000006HLb"
+        // await automate.signup(signupConfig)
+        // const orgId = "00Dxx0000006Hn1" // inst240
 
         // await automate.addLicense(orgId, licenseConfig)
         // await automate.setOrganizationAmounts(orgId, provisionValConfig)
-        await automate.doHoseMyOrg(orgId, hoseMyOrgConfig)
+        // await automate.doHoseMyOrg(orgId, hoseMyOrgConfig)
+
+
+        // ASM 240
+        const orgId = "00Dxx0000006Hn1" // inst240
+        await automate.addLicense(orgId, licenseConfig2)
+        // await automate.setOrganizationAmounts(orgId, provisionValConfig240)
+        // await automate.doHoseMyOrg(orgId, hoseMyOrgConfig240)
+
 
         // let orgUrl = await automate.getOrgUrl(orgId)
         // console.log({ orgUrl });
 
     } catch (e) {
         console.log(e);
+        process.exit(2)
     }
 
 })();

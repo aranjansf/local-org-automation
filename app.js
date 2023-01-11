@@ -29,14 +29,17 @@ class Automate {
         let hostname = "https://" + hostNamePs.toString().trim() + ":6101"
         console.log({ host: hostname });
         this.hostname = hostname
+        // Override to use workspaces url
+        this.hostname = "https://i-0a83d6923f56aaa2b_port-6101.dataplane.cvw-dataplane-test.aws-dev2-uswest2.aws.sfdc.cl/"
+        this.hostname = "https://daa181e72e2d:6101/"
     }
 
     async loginBlacktab() {
         await this.page.setViewport({ width: 0, height: 0 });
-
+        // await this.page.goto("chrome://version");
         await this.page.goto(this.hostname);
-        await this.page.waitForSelector("#username")
-        await this.page.waitForSelector("#password")
+        await this.page.waitForSelector("#username", { timeout: 0 })
+        await this.page.waitForSelector("#password", { timeout: 0 })
         await this.page.type("#username", "admin@bt.salesforce.com")
         await this.page.type("#password", "123456")
         // await sleep(30000)
@@ -377,7 +380,7 @@ class Automate {
             await hoseMyOrgPage.$eval(`#${hoseMyOrgVals[orgVal]}`, el => el.checked = true)
         }
 
-        let saveBtn = await hoseMyOrgPage.$("input[name='save']")
+        let saveBtn = await hoseMyOrgPage.$("input[name='detonate']")
         await saveBtn.click()
         await hoseMyOrgPage.waitForNavigation()
         console.log("=> Org Vals saved");
@@ -390,8 +393,26 @@ class Automate {
 
 
 (async () => {
+
+    // const browser = await puppeteer.launch({
+    //     headless: false,
+    //     executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    //     args: ["--user-data-dir=/Users/a.ranjan/Library/Application\ Support/Google/Chrome/"]
+    // });
+
+    // Open browser with Sf Workspaces Profile
+    const browser = await puppeteer.launch({
+        headless: false,
+        executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+        args: ["--user-data-dir=/Users/a.ranjan/Library/Application\ Support/Google/Chrome/SalesforceWorkspaces"]
+    })
+
+    // const browser = await puppeteer.connect({
+    //     browserWSEndpoint: "ws://127.0.0.1:9222/devtools/browser/92de2559-8d76-4d74-ae91-4cb6b6677ec8"
+    // })
+
     try {
-        const browser = await puppeteer.launch({ headless: false });
+
         const page = await browser.newPage();
 
         let automate = new Automate(browser, page)
@@ -404,51 +425,26 @@ class Automate {
         //     password: "123456"
         // }
         let signupConfig = {
-            name: `Instrumentation 240`,
-            username: `inst240@test.com`,
+            name: `LRM 2`,
+            username: `lrm2@test.com`,
             email: "a.ranjan@salesforce.com",
             password: "123456"
         }
+
 
         let licenseConfig = {
             EditionLicense: {
                 "Developer Edition": "100"
             },
             AddonLicense: {
-                "FinancialServicesCloudBasicAddOn": "10",
-                "FinancialServicesCloudStandardAddOn": "10",
-                "FinancialServicesForCmtyAddon": "10"
-            },
-            PlatformLicense: {
-                "DynamicDashboards5": "5",
-                "FinancialServicesforCmty": "10",
-                "FinancialServicesCloudExtension": "10",
-                "FSCInsurance": "10",
-                "MediaCloud": "10"
-            },
-            UserLicense: {
-                "Financial Services Cloud Basic (Permset License)": "10",
-                "Financial Services Cloud Standard (Permset License)": "10",
-                "Financial Services Cloud Extension (Permset License)": "10",
-                "Financial Services Community (Permset License)": "10",
-                "Financial Services Cloud Referral Scoring Permission Set (Permset License)": "10",
-                "MarketingUser (Feature License)": "10",
-                "Media Cloud Base (Permset License)": "30"
-            }
-        }
+                // "FinancialServicesCloudBasicAddOn": "10",
+                // "FinancialServicesCloudStandardAddOn": "10",
+                // "FinancialServicesForCmtyAddon": "10",
 
-        let licenseConfig2 = {
-            EditionLicense: {
-                "Developer Edition": "100"
-            },
-            AddonLicense: {
-                "FinancialServicesCloudBasicAddOn": "10",
-                "FinancialServicesCloudStandardAddOn": "10",
-                "FinancialServicesForCmtyAddon": "10",
                 "APIRequestLimit1000": "1",
                 "Apps250IgnoreQuantityAddOn": "1",
                 "ChatterAnswersUser": "10",
-                "ChatterAnswersUser": "10",
+                "ChatterCommunity": "10",
                 "CRMUserAddOn": "10",
                 "CustomerCommunity": "10",
                 "CustomerCommunityLogin": "10",
@@ -474,9 +470,16 @@ class Automate {
                 "ServiceDeskUser": "10",
                 "Sites24": "1",
                 "SurveyUsage300ResponseLimit": "1",
-                "Tabs1200IgnoreQuantityAddOn": "1"
+                "Tabs1200IgnoreQuantityAddOn": "1",
+                "MediaCloudPlusAddOn": "20",
+                "AdSalesManagementAddOn": "20",
+                "ContractMgmtIndCmeAddOn": "20",
+                "DocGenIndCmeAddOn": "20",
+                "OrderManagementAddOn": "20"
             },
-            PlatformLicense: {},
+            PlatformLicense: {
+                "MediaCloud": "10"
+            },
             UserLicense: {
                 "Media Cloud Base (Permset License)": "100",
                 "Media Cloud Plus (Permset License)": "100",
@@ -530,16 +533,10 @@ class Automate {
 
         const hoseMyOrgConfig = {
             "CustomObjectLicensing": true,
-            // "Forecasting3": true,
-            // "Forecasting3Enable": true
-        }
-
-        const hoseMyOrgConfig240 = {
-            "CustomObjectLicensing": true,
             "InteractionPlatformPilot": true,
-            "OmniStudio": true
-            // "Forecasting3": true,
-            // "Forecasting3Enable": true
+            "OmniStudio": true,
+            "MediaLRMPilot": true,
+            // "QuotesEnabled": true
         }
 
         let provisionValConfig240 = {
@@ -565,8 +562,14 @@ class Automate {
             }
         }
 
+        // Login to blacktab
         await automate.loginBlacktab()
+
+        // Set necessary admin privileges
         // await automate.setAdminUserPrefs(userPrefConfig)
+
+        // Signup
+        // await automate.signup(signupConfig)
 
         // await automate.addLicense("00Dxx0000006Mt9", licenseConfig)
         // await automate.setOrganizationAmounts("00Dxx0000006Mt9", provisionValConfig)
@@ -575,19 +578,18 @@ class Automate {
         // await page.type("#username", "admin@bt.salesforce.com")
         //await browser.close();
 
-        // await automate.setAdminUserPrefs(userPrefConfig)
 
-        // await automate.signup(signupConfig)
-        // const orgId = "00Dxx0000006Hn1" // inst240
 
-        // await automate.addLicense(orgId, licenseConfig)
+        const orgId = "00Dxx0000006HkJ" // lrm2
+
+        await automate.addLicense(orgId, licenseConfig)
         // await automate.setOrganizationAmounts(orgId, provisionValConfig)
-        // await automate.doHoseMyOrg(orgId, hoseMyOrgConfig)
+        await automate.doHoseMyOrg(orgId, hoseMyOrgConfig)
 
 
         // ASM 240
-        const orgId = "00Dxx0000006Hn1" // inst240
-        await automate.addLicense(orgId, licenseConfig2)
+        // const orgId = "00Dxx0000006Hn1" // inst240
+        // await automate.addLicense(orgId, licenseConfig2)
         // await automate.setOrganizationAmounts(orgId, provisionValConfig240)
         // await automate.doHoseMyOrg(orgId, hoseMyOrgConfig240)
 
@@ -596,8 +598,10 @@ class Automate {
         // console.log({ orgUrl });
 
     } catch (e) {
-        console.log(e);
-        process.exit(2)
+        console.log("Caught Error:", e);
+        // await browser.close();
+        // process.exit(2)
     }
+    // await browser.close();
 
 })();
